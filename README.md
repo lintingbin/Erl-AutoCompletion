@@ -12,7 +12,7 @@ Installation
 Requirement
 --------
 
-    Need to install Erlang. If Erlang is not installed, Sublime-Erlang will not be able to create an auto completion and goto definition index based on the version of Erlang you have installed.
+Need to install Erlang. If Erlang is not installed, Sublime-Erlang will not be able to create an auto completion and goto definition index based on the version of Erlang you have installed.
 
 Settings
 --------
@@ -21,13 +21,13 @@ settings file open by Preferences -> Package Settings -> Sublime-Erlang
 
 #### escript settings 
 
-    If you have set the escript environment variable, you do not need to set the escript value in the configuration file, comment it out.
+If you have set the escript environment variable, you do not need to set the escript value in the configuration file, comment it out.
 
 #### erlang_project_folder settings
 
-    This configuration item is used to set the folder where you want to add the source code for the auto completion function.
+This configuration item is used to set the folder where you want to add the source code for the auto completion function.
 
-    If you comment out this configuration, you will read all the files that have been opened by Sublime as the value for this configuration item.
+If you comment out this configuration, you will read all the files that have been opened by Sublime as the value for this configuration item.
 
 Discussing
 ----
