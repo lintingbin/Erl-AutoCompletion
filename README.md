@@ -5,7 +5,7 @@ Installation
 
 #### with Git
 
-    cd ~/.config/sublime-text/Packages/ (click Preferences->Browse Packages)
+    cd ~/.config/sublime-text/Packages/ (open by: Preferences->Browse Packages)
     git clone https://github.com/lintingbin2009/Sublime-Erlang
     restart sublime-text
 
@@ -17,7 +17,7 @@ Need to install Erlang. If Erlang is not installed, Sublime-Erlang will not be a
 Settings
 --------
 
-settings file open by Preferences -> Package Settings -> Sublime-Erlang
+Settings file open by: Preferences -> Package Settings -> Sublime-Erlang
 
 #### escript settings 
 
