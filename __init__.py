@@ -1,4 +1,4 @@
 try:
-    from util import *
+    from sublime_erlang import *
 except ImportError:
-    from .util import *
+    from .sublime_erlang import *

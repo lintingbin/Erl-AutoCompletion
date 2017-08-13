@@ -1,0 +1,56 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "Sublime-Erlang",
+                        "children":
+                        [
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/Sublime-Erlang/sublime_erlang.sublime-settings"},
+                                "caption": "Settings – Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/sublime_erlang.sublime-settings"},
+                                "caption": "Settings – User"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/Sublime-Erlang/Default.sublime-keymap"},
+                                "caption": "Keymap – Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/Default.sublime-keymap"},
+                                "caption": "Keymap – User"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/Sublime-Erlang/Default.sublime-mousemap"},
+                                "caption": "Mousemap – Default"
+                            },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/Default.sublime-mousemap"},
+                                "caption": "Mousemap – User"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

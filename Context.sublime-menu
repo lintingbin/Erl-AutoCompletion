@@ -1,7 +1,5 @@
-[
-{
+[{
     "id" : "goto_definition(Erlang)",
     "caption" : "goto_definition(Erlang)",
-    "command" : "goto_definition"
-}
-]
+    "command" : "goto"
+}]
