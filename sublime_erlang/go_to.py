@@ -20,7 +20,7 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
             if key in CACHE['libs'].fun_postion:
                 self.__window_quick_panel_open_window(CACHE['libs'].fun_postion[key])
             elif key in CACHE['project'].fun_postion:
-                self.__window_quick_panel_open_window(CACHE['libs'].fun_postion[key])
+                self.__window_quick_panel_open_window(CACHE['project'].fun_postion[key])
 
     def get_line_str(self, view):
         location = view.sel()[0].begin()
