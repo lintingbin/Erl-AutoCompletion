@@ -1,4 +1,4 @@
-import os, fnmatch, re, pickle, gzip, threading, sublime
+import os, fnmatch, re, pickle, gzip, threading, sublime, json
 from .settings import get_erl_lib_dir, get_settings_param, GLOBAL_SET
 
 CACHE = {}
@@ -53,7 +53,7 @@ class DataCache:
                         self.libs[module].append(('{0}/{1}\tfunction'.format(fun_name, param_len), completion))
                         self.fun_postion[(module, fun_name, param_len)] = '{0}:{1}'.format(filepath, row_id)
                 row_id += 1
-            self.modules.append(('{0}\tmodule'.format(module), module))
+            self.modules.append({'trigger' : '{0}\tmodule'.format(module), 'contents' : module})
 
     def format_param(self, param_str):
         param_str = re.sub(self.re_dict['special_param'], 'Param', param_str)
@@ -90,6 +90,11 @@ class DataCache:
         with gzip.open(filepath, 'wb') as fd:
             pickle.dump(data, fd)
 
+    def __dump_json(self, filename, data):
+        filepath = self.__get_filepath(filename)
+        with open(filepath, 'w') as fd:
+            fd.write(json.dumps(data))
+
     def build_data(self):
         all_filepath = []
         for dir in self.dir:
@@ -98,7 +103,7 @@ class DataCache:
                     all_filepath.append(os.path.join(root, file))
 
         if all_filepath == []:
-            (self.libs, self.modules, self.fun_postion) = self.__load_data('completion')
+            (self.libs, self.fun_postion) = self.__load_data('completion')
         else:
             cache_info = self.__load_data('cache_info')
             new_cache_info = (self.version, all_filepath)
@@ -106,11 +111,14 @@ class DataCache:
                 for filepath in all_filepath:
                     self.build_module_dict(filepath)
                 if 'erlang' in self.libs:
-                    self.modules.extend(self.libs['erlang'])
+                    for (trigger, content) in self.libs['erlang']:
+                        self.modules.append({'trigger' : trigger, 'contents' : content})
+
                 self.__save_data('cache_info', new_cache_info)
-                self.__save_data('completion', (self.libs, self.modules, self.fun_postion))
+                self.__save_data('completion', (self.libs, self.fun_postion))
+                self.__dump_json('erlang.sublime-completions', {'scope': 'source.erlang', 'completions': self.modules})
             else:
-                (self.libs, self.modules, self.fun_postion) = self.__load_data('completion')
+                (self.libs, self.fun_postion) = self.__load_data('completion')
 
     def build_data_async(self):
         this = self

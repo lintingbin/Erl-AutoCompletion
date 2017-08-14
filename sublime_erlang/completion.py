@@ -25,6 +25,3 @@ class CompletionsListener(sublime_plugin.EventListener):
 
             if module_name in CACHE['project'].libs:
                 return (CACHE['project'].libs[module_name], flag)
-                
-        else:
-            return CACHE['libs'].modules + CACHE['project'].modules
