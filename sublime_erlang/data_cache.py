@@ -50,8 +50,12 @@ class DataCache:
                     if (fun_name, param_len) in export_fun:
                         del(export_fun[(fun_name, param_len)])
                         completion = self.__tran2compeletion(fun_name, param_list, param_len)
-                        self.libs[module].append(('{0}/{1}\tfunction'.format(fun_name, param_len), completion))
-                        self.fun_postion[(module, fun_name, param_len)] = '{0}:{1}'.format(filepath, row_id)
+                        format_fun_name = '{0}/{1}'.format(fun_name, param_len)
+                        self.libs[module].append(('{0}\tfunction'.format(format_fun_name), completion))
+                        
+                        if (module, fun_name) not in self.fun_postion:
+                            self.fun_postion[(module, fun_name)] = []
+                        self.fun_postion[(module, fun_name)].append((format_fun_name, filepath, row_id))
                 row_id += 1
             self.modules.append({'trigger' : '{0}\tmodule'.format(module), 'contents' : module})
 
