@@ -31,5 +31,5 @@ If you comment out this configuration, you will read all the files that have bee
 
 Discussing
 ----
-- [Submit issue](https://github.com/lintingbin2009/Sublime-Erlang/issues)
+- [Submit issue](https://github.com/lintingbin2009/Erl-AutoCompletion/issues)
 - Email: lintingbin31@gmail.com
