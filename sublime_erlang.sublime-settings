@@ -1,8 +1,8 @@
 {
-    // 如果escript没设置环境变量，escript的路径要手动设置
+    // if escript not in the path, we need set escript path.
     // "escript" : "D:\\erl8.3\\erts-8.3\\bin\\escript",
 
-    "sublime_erlang_version" : "0.0.1",
+    "sublime_erlang_version" : "1.0.0",
 
     "erlang_project_folder" : []
 }

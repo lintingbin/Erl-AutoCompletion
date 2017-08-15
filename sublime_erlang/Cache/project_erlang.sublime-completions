@@ -1,1 +1,1 @@
-{"scope": "source.erlang", "completions": [{"trigger": "csv2record\tmodule", "contents": "csv2record"}, {"trigger": "csv2record_app\tmodule", "contents": "csv2record_app"}, {"trigger": "csv2record_sup\tmodule", "contents": "csv2record_sup"}, {"trigger": "csv_parser\tmodule", "contents": "csv_parser"}, {"trigger": "file_generator\tmodule", "contents": "file_generator"}]}
+{"completions": [], "scope": "source.erlang"}
