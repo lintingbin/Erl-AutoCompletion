@@ -12,12 +12,12 @@
                 "children":
                 [
                     {
-                        "caption": "Sublime-Erlang",
+                        "caption": "Erl-AutoCompletion",
                         "children":
                         [
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/Sublime-Erlang/sublime_erlang.sublime-settings"},
+                                "args": {"file": "${packages}/Erl-AutoCompletion/sublime_erlang.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
@@ -28,7 +28,7 @@
                             { "caption": "-" },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/Sublime-Erlang/Default.sublime-keymap"},
+                                "args": {"file": "${packages}/Erl-AutoCompletion/Default.sublime-keymap"},
                                 "caption": "Keymap – Default"
                             },
                             {
@@ -39,7 +39,7 @@
                             { "caption": "-" },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/Sublime-Erlang/Default.sublime-mousemap"},
+                                "args": {"file": "${packages}/Erl-AutoCompletion/Default.sublime-mousemap"},
                                 "caption": "Mousemap – Default"
                             },
                             {
