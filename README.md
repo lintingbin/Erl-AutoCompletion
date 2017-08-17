@@ -29,6 +29,17 @@ This configuration item is used to set the folder where you want to add the sour
 
 If you comment out this configuration, you will read all the files that have been opened by Sublime as the value for this configuration item.
 
+#### Autocomplete on ":"
+
+If you want auto-completion on ":", you can define a trigger in the
+Sublime User or Erlang preferences:
+
+    # User/Preferences.sublime-settings or User/Erlang.sublime-settings
+    {
+        // ...
+        "auto_complete_triggers": [{"selector": "source.erlang", "characters": ":"}],
+    }
+
 Discussing
 ----
 - [Submit issue](https://github.com/lintingbin2009/Erl-AutoCompletion/issues)
