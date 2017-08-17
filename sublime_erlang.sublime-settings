@@ -4,5 +4,5 @@
 
     "sublime_erlang_version" : "1.0.0",
 
-    "erlang_project_folder" : []
+    // "erlang_project_folder" : []
 }

@@ -6,7 +6,7 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
     def __init__(self, view):
         sublime_plugin.TextCommand.__init__(self, view)
         DataCache.__init__(self)
-        self.window = self.view.window()
+        self.window = sublime.active_window()
 
     def run(self, edit):
         line_str = self.get_line_str(self.view)

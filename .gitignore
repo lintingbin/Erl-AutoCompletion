@@ -1,0 +1,4 @@
+# igonre cache dir
+sublime_erlang/Cache/project_cache_info
+sublime_erlang/Cache/project_completion
+sublime_erlang/Cache/project_erlang.sublime-completions

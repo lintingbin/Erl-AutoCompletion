@@ -1,4 +1,4 @@
-import os, fnmatch, re, pickle, gzip, threading, sublime, json, sublime_plugin
+import os, fnmatch, re, pickle, gzip, threading, sublime, json, sublime_plugin, hashlib
 from .settings import get_erl_lib_dir, get_settings_param, GLOBAL_SET
 
 CACHE = {}
@@ -48,8 +48,10 @@ class DataCache:
             (path, filename) = os.path.split(filepath)
             (module, extension) = os.path.splitext(filename)
 
+            if module not in self.libs:
+                self.libs[module] = []
+
             row_id = 1
-            self.libs[module] = []
             for line in code.split('\n'):
                 funhead = self.re_dict['funline'].search(line)
                 if funhead is not None: 
@@ -120,7 +122,9 @@ class DataCache:
             (self.libs, self.fun_postion) = self.__load_data('completion')
         else:
             cache_info = self.__load_data('cache_info')
-            new_cache_info = (self.version, all_filepath)
+            all_filepath_md5 = hashlib.md5(json.dumps(all_filepath).encode('UTF-8')).hexdigest()
+            new_cache_info = (self.version, all_filepath_md5)
+
             if cache_info is None or cache_info != new_cache_info:
                 for filepath in all_filepath:
                     self.build_module_dict(filepath)
