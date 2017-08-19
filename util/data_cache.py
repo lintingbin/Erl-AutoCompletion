@@ -1,36 +1,14 @@
 import os, fnmatch, re, pickle, gzip, threading, sublime, json, sublime_plugin, hashlib
-from .settings import get_erl_lib_dir, get_settings_param, GLOBAL_SET
-
-CACHE = {}
-
-def plugin_loaded():
-    global CACHE
-    CACHE['libs'] = DataCache([get_erl_lib_dir()], 'libs')
-    CACHE['libs'].build_data_async()
-
-    default_project = sublime.active_window().folders()
-    project_folder = get_settings_param('erlang_project_folder', default_project)
-    CACHE['project'] = DataCache(project_folder, 'project')
-    CACHE['project'].build_data_async()
-
-class SaveFileRebuildListener(sublime_plugin.EventListener):
-    def on_post_save(self, view):
-        caret = view.sel()[0].a
-
-        if not ('source.erlang' in view.scope_name(caret)): 
-            return
-
-        # TODO
-        # CACHE['project'].build_data_async()
+from .settings import get_settings_param, GLOBAL_SET
 
 class DataCache:
-    def __init__(self, dir = '', data_type = ''):
+    def __init__(self, dir = '', data_type = '', cache_dir = ''):
         self.dir = dir
         self.libs = {}
         self.fun_postion = {}
         self.modules = []
-        self.data_type = data_type;
-        self.cache_dir = GLOBAL_SET['cache_dir']
+        self.data_type = data_type
+        self.cache_dir = cache_dir
         self.re_dict = GLOBAL_SET['compiled_re']
         self.version = get_settings_param('sublime_erlang_version', '0.0.0')
 

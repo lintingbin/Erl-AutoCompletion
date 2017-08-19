@@ -29,6 +29,5 @@ GLOBAL_SET = {
         'special_param': re.compile(r'(?:\{.*\})|(?:<<.*>>)|(?:\[.*\])'),
         '=' : re.compile(r'\s*=\s*\w+'),
         'take_mf' : re.compile(r'(\w+)\s*:\s*(\w+)\s*\(')
-    },
-    'cache_dir' : 'Cache'
+    }
 }
