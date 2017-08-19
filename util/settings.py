@@ -28,6 +28,7 @@ GLOBAL_SET = {
         'funline' : re.compile(r'\s*(\w+)\s*\(([^)]*)\).*\-\>'),
         'special_param': re.compile(r'(?:\{.*\})|(?:<<.*>>)|(?:\[.*\])'),
         '=' : re.compile(r'\s*=\s*\w+'),
-        'take_mf' : re.compile(r'(\w+)\s*:\s*(\w+)\s*\(')
+        'take_mf' : re.compile(r'(\w+)\s*:\s*(\w+)\s*\('),
+        'take_fun' : re.compile(r'(\w+)\s*\(')
     }
 }

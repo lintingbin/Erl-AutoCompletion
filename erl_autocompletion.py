@@ -71,6 +71,20 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
             elif key in cache['project'].fun_postion:
                 self.__window_quick_panel_open_window(cache['project'].fun_postion[key])
 
+            return
+
+        math = self.re_dict['take_fun'].search(line_str)
+        if math is not None and (len(math.groups()) == 1):
+            fun_name = math.group(1)
+
+            libs_key = ('erlang', fun_name)
+            cur_module = self.get_module_from_path(self.view.file_name())
+            project_key = (cur_module, fun_name)
+            if libs_key in cache['libs'].fun_postion:
+                self.__window_quick_panel_open_window(cache['libs'].fun_postion[libs_key])
+            elif project_key in cache['project'].fun_postion:
+                self.__window_quick_panel_open_window(cache['project'].fun_postion[project_key])
+
     def get_line_str(self, view):
         location = view.sel()[0].begin()
         line_region = view.line(location)

@@ -23,8 +23,7 @@ class DataCache:
                     [name, cnt] = funname_match.group().split('/')
                     export_fun[(name, int(cnt))] = None
 
-            (path, filename) = os.path.split(filepath)
-            (module, extension) = os.path.splitext(filename)
+            module = self.get_module_from_path(filepath)
 
             if module not in self.libs:
                 self.libs[module] = []
@@ -48,6 +47,12 @@ class DataCache:
                         self.fun_postion[(module, fun_name)].append((format_fun_name, filepath, row_id))
                 row_id += 1
             self.modules.append({'trigger' : '{0}\tmodule'.format(module), 'contents' : module})
+
+    def get_module_from_path(self, filepath):
+        (path, filename) = os.path.split(filepath)
+        (module, extension) = os.path.splitext(filename)
+
+        return module
 
     def format_param(self, param_str):
         param_str = re.sub(self.re_dict['special_param'], 'Param', param_str)
