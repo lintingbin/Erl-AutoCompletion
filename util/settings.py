@@ -30,5 +30,6 @@ GLOBAL_SET = {
         '=' : re.compile(r'\s*=\s*\w+'),
         'take_mf' : re.compile(r'(\w+)\s*:\s*(\w+)\s*\('),
         'take_fun' : re.compile(r'(\w+)\s*\(')
-    }
+    },
+    'package_name' : 'Erl-AutoCompletion'
 }

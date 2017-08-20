@@ -1,14 +1,13 @@
 from .util import *
 from functools import partial
-import sublime_plugin, sublime, re, os, sys
-from multiprocessing import Process, Queue
+import sublime_plugin, sublime, re, os, sys, shutil
 
 cache = {}
 
 def plugin_loaded():
     global cache
 
-    cache_dir = os.path.join(sublime.cache_path(), 'Erl-AutoCompletion')
+    cache_dir = os.path.join(sublime.cache_path(), GLOBAL_SET['package_name'])
     cache['libs'] = DataCache([get_erl_lib_dir()], 'libs', cache_dir)
     cache['libs'].build_data_async()
 
@@ -16,6 +15,19 @@ def plugin_loaded():
     project_folder = get_settings_param('erlang_project_folder', all_folders)
     cache['project'] = DataCache(project_folder, 'project', cache_dir)
     cache['project'].build_data_async()
+
+def plugin_unloaded():
+    from package_control import events
+
+    package_name = GLOBAL_SET['package_name']
+    if events.remove(package_name):
+        print('remove {0}'.format(package_name))
+        cache_dir = os.path.join(sublime.cache_path(), package_name)
+        shutil.rmtree(cache_dir)
+
+if sys.version_info < (3,):
+    plugin_loaded()
+    unload_handler = plugin_unloaded
 
 class SaveFileRebuildListener(sublime_plugin.EventListener):
     def on_post_save(self, view):
