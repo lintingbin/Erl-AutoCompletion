@@ -1,6 +1,6 @@
 # Erl-AutoCompletion
 
-This plugin only supports Sublime Text 3.
+This is an Erlang auto-completion and goto-definition plugin of the Sublime editor. It only supports Sublime Text 3.
 
 Installation
 ------------
