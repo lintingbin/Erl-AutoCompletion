@@ -1,23 +1,33 @@
-# Sublime-Erlang
+# Erl-AutoCompletion
+
+This plugin only supports Sublime Text 3.
 
 Installation
 ------------
 
+#### with [Sublime Package Control](http://wbond.net/sublime_packages/package_control)
+
+ 1. Open command pallet (default: `ctrl+shift+p`)
+ 2. Type `package control install` and select command `Package Control: Install Package`
+ 3. Type `Erl-AutoCompletion` and select `Erl-AutoCompletion`
+
+Additional info about to use Sublime Package Control you can find here: [http://wbond.net/sublime_packages/package_control/usage](http://wbond.net/sublime_packages/package_control/usage).
+
 #### with Git
 
-    cd ~/.config/sublime-text/Packages/ (open by: Preferences->Browse Packages)
-    git clone https://github.com/lintingbin2009/Sublime-Erlang
+    cd ~/.config/sublime-text/Packages/ (open by: Preferences -> Browse Packages)
+    git clone https://github.com/lintingbin2009/Erl-AutoCompletion
     restart sublime-text
 
 Requirement
 --------
 
-Need to install Erlang. If Erlang is not installed, Sublime-Erlang will not be able to create an auto completion and goto definition index based on the version of Erlang you have installed.
+Need to install Erlang. If Erlang is not installed, Erl-AutoCompletion will not be able to create an auto completion and goto definition index based on the version of Erlang you have installed.
 
 Settings
 --------
 
-Settings file open by: Preferences -> Package Settings -> Sublime-Erlang
+Settings file open by: Preferences -> Package Settings -> Erl-AutoCompletion
 
 #### escript settings 
 
@@ -25,9 +35,9 @@ If you have set the escript environment variable, you do not need to set the esc
 
 #### erlang_project_folder settings
 
-This configuration item is used to set the folder where you want to add the source code for the auto completion function.
+This configuration item is used to set the folder where you want to add the source code for the auto completion and goto definition function.
 
-If you comment out this configuration, you will read all the files that have been opened by Sublime as the value for this configuration item.
+If you comment out this configuration(default), the plugin will read all the files that have been opened by Sublime as the value for this configuration item.
 
 #### Autocomplete on ":"
 
@@ -39,6 +49,10 @@ Sublime User or Erlang preferences:
         // ...
         "auto_complete_triggers": [{"selector": "source.erlang", "characters": ":"}],
     }
+
+#### Goto definition
+
+The right mouse button can bring up the goto definition menu.
 
 Discussing
 ----
