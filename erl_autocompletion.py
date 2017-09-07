@@ -40,7 +40,6 @@ class SaveFileRebuildListener(sublime_plugin.EventListener):
 
 class CompletionsListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
-
         if cache['libs'].libs == {}: 
             return
 
@@ -70,7 +69,7 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
         self.window = sublime.active_window()
 
     def run(self, edit):
-        line_str = self.get_line_str(self.view)
+        line_str = self.__get_line_str(self.view)
 
         math = self.re_dict['take_mf'].search(line_str)
         if math is not None and (len(math.groups()) == 2):
@@ -89,20 +88,53 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
         if math is not None and (len(math.groups()) == 1):
             fun_name = math.group(1)
 
+            filepath = self.view.file_name()
             libs_key = ('erlang', fun_name)
-            cur_module = self.get_module_from_path(self.view.file_name())
+            cur_module = self.get_module_from_path(filepath)
             project_key = (cur_module, fun_name)
             if libs_key in cache['libs'].fun_postion:
                 self.__window_quick_panel_open_window(cache['libs'].fun_postion[libs_key])
-            elif project_key in cache['project'].fun_postion:
-                self.__window_quick_panel_open_window(cache['project'].fun_postion[project_key])
+            else:
+                row_id = 1
+                cur_view_postion = {}
+                module = self.get_module_from_path(filepath)
+                code = self.view.substr(sublime.Region(0, self.view.size()))
+                for line in code.split('\n'):
+                    funhead = self.re_dict['funline'].search(line)
+                    if funhead is not None: 
+                        fun_name = funhead.group(1)
+                        param_str = funhead.group(2)
+                        param_list = self.format_param(param_str)
+                        key = (module, fun_name)
+                        format_fun_name = '{0}/{1}'.format(fun_name, len(param_list))
+                        
+                        if key not in cur_view_postion:
+                            cur_view_postion[key] = []
+                        cur_view_postion[key].append((format_fun_name, filepath, row_id))
+                    row_id += 1
 
-    def get_line_str(self, view):
+                self.__window_quick_panel_open_window(cur_view_postion[project_key])
+
+            return
+
+    def __get_line_str(self, view):
         location = view.sel()[0].begin()
         line_region = view.line(location)
         line_str = view.substr(line_region)
 
         return line_str
+
+    def __window_quick_panel_open_window(self, options):
+        self.point = self.view.sel()[0]
+        self.options = options
+
+        self.window.show_quick_panel(
+            [self.__show_option(o) for o in options],
+            self._jump_to_in_window,
+            on_highlight=partial(self._jump_to_in_window, transient=sublime.TRANSIENT))
+
+    def __show_option(self, options):
+        return '{1}:{0} line: {2}'.format(*options)
 
     def _jump_to_in_window(self, index, line_number=None, param_cnt=None, transient=0):
 
@@ -121,15 +153,3 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
 
         (fun_name, filename, line_number) = self.options[index]
         self.window.open_file('{0}:{1}'.format(filename, line_number or 0), sublime.ENCODED_POSITION|transient)
-
-    def __window_quick_panel_open_window(self, options):
-        self.point = self.view.sel()[0]
-        self.options = options
-
-        self.window.show_quick_panel(
-            [self.__show_option(o) for o in options],
-            self._jump_to_in_window,
-            on_highlight=partial(self._jump_to_in_window, transient=sublime.TRANSIENT))
-
-    def __show_option(self, options):
-        return '{1}:{0} line: {2}'.format(*options)
