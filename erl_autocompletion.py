@@ -97,6 +97,7 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
             else:
                 row_id = 1
                 cur_view_postion = {}
+                all_cur_view_fun = []
                 module = self.get_module_from_path(filepath)
                 code = self.view.substr(sublime.Region(0, self.view.size()))
                 for line in code.split('\n'):
@@ -106,11 +107,14 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
                         param_str = funhead.group(2)
                         param_list = self.format_param(param_str)
                         key = (module, fun_name)
-                        format_fun_name = '{0}/{1}'.format(fun_name, len(param_list))
+                        param_len = len(param_list)
+                        format_fun_name = '{0}/{1}'.format(fun_name, param_len)
                         
-                        if key not in cur_view_postion:
-                            cur_view_postion[key] = []
-                        cur_view_postion[key].append((format_fun_name, filepath, row_id))
+                        if (key, param_len) not in all_cur_view_fun:
+                            if key not in cur_view_postion:
+                                cur_view_postion[key] = []
+                            cur_view_postion[key].append((format_fun_name, filepath, row_id))
+                            all_cur_view_fun.append((key, param_len))
                     row_id += 1
 
                 self.__window_quick_panel_open_window(cur_view_postion[project_key])
@@ -127,6 +131,11 @@ class GotoCommand(sublime_plugin.TextCommand, DataCache):
     def __window_quick_panel_open_window(self, options):
         self.point = self.view.sel()[0]
         self.options = options
+
+        if len(options) == 1:
+            (_fun_name, path, row) = options[0]
+            self.window.open_file('{}:{}:0'.format(path, row), sublime.ENCODED_POSITION)
+            return
 
         self.window.show_quick_panel(
             [self.__show_option(o) for o in options],
