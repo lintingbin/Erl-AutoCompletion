@@ -5,7 +5,7 @@ class DataCache:
     def __init__(self, dir = '', data_type = '', cache_dir = ''):
         self.dir = dir
         self.libs = {}
-        self.fun_postion = {}
+        self.fun_position = {}
         self.modules = []
         self.data_type = data_type
         self.cache_dir = cache_dir
@@ -42,9 +42,9 @@ class DataCache:
                         format_fun_name = '{0}/{1}'.format(fun_name, param_len)
                         self.libs[module].append(('{0}\tfunction'.format(format_fun_name), completion))
                         
-                        if (module, fun_name) not in self.fun_postion:
-                            self.fun_postion[(module, fun_name)] = []
-                        self.fun_postion[(module, fun_name)].append((format_fun_name, filepath, row_id))
+                        if (module, fun_name) not in self.fun_position:
+                            self.fun_position[(module, fun_name)] = []
+                        self.fun_position[(module, fun_name)].append((format_fun_name, filepath, row_id))
                 row_id += 1
             self.modules.append({'trigger' : '{0}\tmodule'.format(module), 'contents' : module})
 
@@ -102,7 +102,7 @@ class DataCache:
                     all_filepath.append(os.path.join(root, file))
 
         if all_filepath == []:
-            (self.libs, self.fun_postion) = self.__load_data('completion')
+            (self.libs, self.fun_position) = self.__load_data('completion')
         else:
             cache_info = self.__load_data('cache_info')
             all_filepath_md5 = hashlib.md5(json.dumps(all_filepath).encode('UTF-8')).hexdigest()
@@ -116,10 +116,10 @@ class DataCache:
                         self.modules.append({'trigger' : trigger, 'contents' : content})
 
                 self.__save_data('cache_info', new_cache_info)
-                self.__save_data('completion', (self.libs, self.fun_postion))
+                self.__save_data('completion', (self.libs, self.fun_position))
                 self.__dump_json('erlang.sublime-completions', {'scope': 'source.erlang', 'completions': self.modules})
             else:
-                (self.libs, self.fun_postion) = self.__load_data('completion')
+                (self.libs, self.fun_position) = self.__load_data('completion')
 
     def build_data_async(self):
         this = self

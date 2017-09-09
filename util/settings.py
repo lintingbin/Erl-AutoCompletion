@@ -29,7 +29,10 @@ GLOBAL_SET = {
         'special_param': re.compile(r'(?:\{.*\})|(?:<<.*>>)|(?:\[.*\])'),
         '=' : re.compile(r'\s*=\s*\w+'),
         'take_mf' : re.compile(r'(\w+)\s*:\s*(\w+)\s*\('),
-        'take_fun' : re.compile(r'(\w+)\s*\(')
+        'take_fun' : re.compile(r'(\w+)\s*\('),
+        'take_record' : re.compile(r'\#\s*(\w+)\s*[\{|.]'),
+        'take_define' : re.compile(r'\?\s*(\w+)'),
+        'take_include' : re.compile(r'-include\("([^\)]*)"\)')
     },
     'package_name' : 'Erl-AutoCompletion'
 }

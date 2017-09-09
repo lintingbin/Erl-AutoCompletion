@@ -3,5 +3,9 @@
     //     "modifiers": ["ctrl"], "button": "button1", 
     //     "command": "goto",
     //     "press_command": "drag_select"
+    // },
+    // {
+    //     "modifiers": ["ctrl"], "button": "button2", 
+    //     "command": "jump_back",
     // }
 ]

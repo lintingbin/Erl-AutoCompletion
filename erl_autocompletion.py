@@ -3,9 +3,11 @@ from functools import partial
 import sublime_plugin, sublime, re, os, sys, shutil
 
 cache = {}
+go_to = None
 
 def plugin_loaded():
     global cache
+    global go_to
 
     cache_dir = os.path.join(sublime.cache_path(), GLOBAL_SET['package_name'])
     cache['libs'] = DataCache([get_erl_lib_dir()], 'libs', cache_dir)
@@ -15,6 +17,8 @@ def plugin_loaded():
     project_folder = get_settings_param('erlang_project_folder', all_folders)
     cache['project'] = DataCache(project_folder, 'project', cache_dir)
     cache['project'].build_data_async()
+
+    go_to = GoTo()
 
 def plugin_unloaded():
     from package_control import events
@@ -29,16 +33,7 @@ if sys.version_info < (3,):
     plugin_loaded()
     unload_handler = plugin_unloaded
 
-class SaveFileRebuildListener(sublime_plugin.EventListener):
-    def on_post_save(self, view):
-        caret = view.sel()[0].a
-
-        if not ('source.erlang' in view.scope_name(caret)): 
-            return
-
-        cache['project'].build_data_async()
-
-class CompletionsListener(sublime_plugin.EventListener):
+class ErlListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
         if cache['libs'].libs == {}: 
             return
@@ -62,103 +57,24 @@ class CompletionsListener(sublime_plugin.EventListener):
             if module_name in cache['project'].libs:
                 return (cache['project'].libs[module_name], flag)
 
-class GotoCommand(sublime_plugin.TextCommand, DataCache):
-    def __init__(self, view):
-        sublime_plugin.TextCommand.__init__(self, view)
-        DataCache.__init__(self)
-        self.window = sublime.active_window()
+    def on_text_command(self, view, command_name, args):
+        if command_name == 'goto' and 'event' in args:
+            event = args['event']
+            point = view.window_to_text((event['x'], event['y']))
 
-    def run(self, edit):
-        line_str = self.__get_line_str(self.view)
-
-        math = self.re_dict['take_mf'].search(line_str)
-        if math is not None and (len(math.groups()) == 2):
-            module_name = math.group(1)
-            fun_name = math.group(2)
-
-            key = (module_name, fun_name)
-            if key in cache['libs'].fun_postion:
-                self.__window_quick_panel_open_window(cache['libs'].fun_postion[key])
-            elif key in cache['project'].fun_postion:
-                self.__window_quick_panel_open_window(cache['project'].fun_postion[key])
-
-            return
-
-        math = self.re_dict['take_fun'].search(line_str)
-        if math is not None and (len(math.groups()) == 1):
-            fun_name = math.group(1)
-
-            filepath = self.view.file_name()
-            libs_key = ('erlang', fun_name)
-            cur_module = self.get_module_from_path(filepath)
-            project_key = (cur_module, fun_name)
-            if libs_key in cache['libs'].fun_postion:
-                self.__window_quick_panel_open_window(cache['libs'].fun_postion[libs_key])
-            else:
-                row_id = 1
-                cur_view_postion = {}
-                all_cur_view_fun = []
-                module = self.get_module_from_path(filepath)
-                code = self.view.substr(sublime.Region(0, self.view.size()))
-                for line in code.split('\n'):
-                    funhead = self.re_dict['funline'].search(line)
-                    if funhead is not None: 
-                        fun_name = funhead.group(1)
-                        param_str = funhead.group(2)
-                        param_list = self.format_param(param_str)
-                        key = (module, fun_name)
-                        param_len = len(param_list)
-                        format_fun_name = '{0}/{1}'.format(fun_name, param_len)
-                        
-                        if (key, param_len) not in all_cur_view_fun:
-                            if key not in cur_view_postion:
-                                cur_view_postion[key] = []
-                            cur_view_postion[key].append((format_fun_name, filepath, row_id))
-                            all_cur_view_fun.append((key, param_len))
-                    row_id += 1
-
-                self.__window_quick_panel_open_window(cur_view_postion[project_key])
-
-            return
-
-    def __get_line_str(self, view):
-        location = view.sel()[0].begin()
-        line_region = view.line(location)
-        line_str = view.substr(line_region)
-
-        return line_str
-
-    def __window_quick_panel_open_window(self, options):
-        self.point = self.view.sel()[0]
-        self.options = options
-
-        if len(options) == 1:
-            (_fun_name, path, row) = options[0]
-            self.window.open_file('{}:{}:0'.format(path, row), sublime.ENCODED_POSITION)
-            return
-
-        self.window.show_quick_panel(
-            [self.__show_option(o) for o in options],
-            self._jump_to_in_window,
-            on_highlight=partial(self._jump_to_in_window, transient=sublime.TRANSIENT))
-
-    def __show_option(self, options):
-        return '{1}:{0} line: {2}'.format(*options)
-
-    def _jump_to_in_window(self, index, line_number=None, param_cnt=None, transient=0):
-
-        try:
-            if self.view.sel()[0] != self.point:
-                self.view.sel().clear()
-                self.view.sel().add(self.point)
-        except AttributeError:
-            pass
-
-        if isinstance(index, int):
-            if index == -1:  
-                self.window.focus_view(self.view)
-                self.view.show(self.point)
+            if not view.match_selector(point, "source.erlang"): 
                 return
 
-        (fun_name, filename, line_number) = self.options[index]
-        self.window.open_file('{0}:{1}'.format(filename, line_number or 0), sublime.ENCODED_POSITION|transient)
+            go_to.run(point, view, cache)
+
+    def on_post_save(self, view):
+        caret = view.sel()[0].a
+
+        if not ('source.erlang' in view.scope_name(caret)): 
+            return
+
+        cache['project'].build_data_async()
+
+class GotoCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        return
