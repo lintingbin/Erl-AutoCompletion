@@ -1,6 +1,6 @@
 # Erl-AutoCompletion
 
-This is an Erlang auto-completion and goto-definition plugin of the Sublime editor. It only supports Sublime Text 3. If you are using Sublime Text 2, please upgrade to Sublime Text 3.
+This is an Erlang auto-completion and goto-definition plugin of the Sublime editor. It only supports **Sublime Text 3**. If you are using Sublime Text 2, please upgrade to Sublime Text 3.
 
 Installation
 ------------
@@ -19,7 +19,8 @@ Additional info about to use Sublime Package Control you can find here: [http://
     git clone https://github.com/lintingbin2009/Erl-AutoCompletion
     restart sublime-text
 
-#### Goto definition
+Goto definition
+------------
 
 The right mouse button can bring up the goto_definition(Erlang) menu. It can find definition of function, record and macro. You can set mousemap by Preferences -> Package Settings -> Erl-AutoCompletion -> Mousemap - default.
 
