@@ -34,5 +34,26 @@ GLOBAL_SET = {
         'take_define' : re.compile(r'\?\s*(\w+)'),
         'take_include' : re.compile(r'-include\("([^\)]*)"\)')
     },
-    'package_name' : 'Erl-AutoCompletion'
+    'package_name' : 'Erl-AutoCompletion',
+    '-key' : [
+        ["-behaviour\tDirectives", "-behaviour(${1:behaviour})."],
+        ["-callback\tDirectives", "-callback ${1:function}(${2:Parameters}) -> ${3:ReturnType}."],
+        ["-compile\tDirectives", "-compile([${1:export_all}])."],
+        ["-define\tDirectives", "-define(${1:macro}${2: (${3:param})], ${4:body})."],
+        ["-else\tDirectives", "-else."],
+        ["-endif\tDirectives", "-endif."],
+        ["-export\tDirectives", "-export([${1:function}/${2:arity}])."],
+        ["-export_type\tDirectives", "-export_type([${1:type}/${2:arity}])."],
+        ["-ifdef\tDirectives", "-ifdef(${1:macro})."],
+        ["-ifndef\tDirectives", "-ifndef(${1:macro})."],
+        ["-import\tDirectives", "-import(${1:module}, [${2:function}/${3:arity}])."],
+        ["-include\tDirectives", "-include(\"${1:file.hrl}\")."],
+        ["-include_lib\tDirectives", "-include_lib(\"${1:app/file.hrl}\")."],
+        ["-module\tDirectives", "-module(${1:${TM_FILEPATH/^.*\\/(.*)\\.[a-z]+$/$1/g}})."],
+        ["-opaque\tDirectives", "-opaque ${1:type}() :: ${2:term()}."],
+        ["-record\tDirectives", "-record(${1:record, {${2:field}${3: = ${4:value}}}})."],
+        ["-spec\tDirectives", "-spec ${1:function}(${2:Parameters}) -> ${3:ReturnType}."],
+        ["-type\tDirectives", "-type ${1:type}() :: ${2:term()}."],
+        ["-undef\tDirectives", "-undef(${1:macro})."]
+    ]
 }

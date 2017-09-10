@@ -41,21 +41,28 @@ class ErlListener(sublime_plugin.EventListener):
         if not view.match_selector(locations[0], "source.erlang"): 
             return []
 
-        pt = locations[0] - len(prefix) - 1
-        ch = view.substr(sublime.Region(pt, pt + 1))
+        point = locations[0] - len(prefix) - 1
+        letter = view.substr(point)
 
-        if ch == ':':
-            module_name = view.substr(view.word(pt))
+        if letter == ':':
+            module_name = view.substr(view.word(point))
             if module_name.strip() == ':': 
                 return
 
             flag = sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS
-
             if module_name in cache['libs'].libs:
                 return (cache['libs'].libs[module_name], flag)
 
             if module_name in cache['project'].libs:
                 return (cache['project'].libs[module_name], flag)
+        else:
+            if letter == '-' and view.substr(view.line(point))[0] == '-':
+                return GLOBAL_SET['-key']
+
+            if re.match('^[0-9a-z_]+$', prefix) and len(prefix) > 1:
+                return []
+            
+            return ([], sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
     def on_text_command(self, view, command_name, args):
         if command_name == 'goto' and 'event' in args:
