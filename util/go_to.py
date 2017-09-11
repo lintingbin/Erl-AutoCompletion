@@ -86,6 +86,9 @@ class GoTo(DataCache):
         return cur_view_position
 
     def open_hrl_popup(self, view, re_define, filepath, point):
+        if not os.path.exists(filepath):
+            return False
+        
         with open(filepath, encoding = 'UTF-8', errors='ignore') as fd:
             content = fd.read()
             code = re.sub(self.re_dict['comment'], '\n', content)
