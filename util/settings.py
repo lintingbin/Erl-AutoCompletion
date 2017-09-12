@@ -39,7 +39,7 @@ GLOBAL_SET = {
         ["-behaviour\tDirectives", "-behaviour(${1:behaviour})."],
         ["-callback\tDirectives", "-callback ${1:function}(${2:Parameters}) -> ${3:ReturnType}."],
         ["-compile\tDirectives", "-compile([${1:export_all}])."],
-        ["-define\tDirectives", "-define(${1:macro}${2: (${3:param})], ${4:body})."],
+        ["-define\tDirectives", "-define(${1:macro}, ${2:value})."],
         ["-else\tDirectives", "-else."],
         ["-endif\tDirectives", "-endif."],
         ["-export\tDirectives", "-export([${1:function}/${2:arity}])."],
