@@ -80,7 +80,7 @@ class ErlListener(sublime_plugin.EventListener):
         if not ('source.erlang' in view.scope_name(caret)): 
             return
 
-        cache['project'].build_data_async()
+        # cache['project'].build_data_async()
 
 class GotoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
