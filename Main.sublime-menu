@@ -17,12 +17,12 @@
                         [
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/Erl-AutoCompletion/sublime_erlang.sublime-settings"},
+                                "args": {"file": "${packages}/Erl-AutoCompletion/erl_autocompletion.sublime-settings"},
                                 "caption": "Settings – Default"
                             },
                             {
                                 "command": "open_file",
-                                "args": {"file": "${packages}/User/sublime_erlang.sublime-settings"},
+                                "args": {"file": "${packages}/User/erl_autocompletion.sublime-settings"},
                                 "caption": "Settings – User"
                             },
                             { "caption": "-" },

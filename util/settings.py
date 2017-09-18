@@ -1,7 +1,7 @@
 import sublime, re, os
 
 def get_plugin_settings():
-    setting_name = 'sublime_erlang.sublime-settings'
+    setting_name = 'erl_autocompletion.sublime-settings'
     plugin_settings = sublime.load_settings(setting_name)
     return plugin_settings
 
