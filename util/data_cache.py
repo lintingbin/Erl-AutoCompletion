@@ -1,5 +1,28 @@
-import os, fnmatch, re, pickle, gzip, threading, sublime, json, sublime_plugin, hashlib
+import os, fnmatch, re, threading, sublime, json, sqlite3
 from .settings import get_settings_param, GLOBAL_SET
+
+CREATE_LIBS_SQL = '''
+CREATE TABLE IF NOT EXISTS `libs` (
+  `mod_name` VARCHAR(128) NOT NULL,
+  `fun_name` VARCHAR(128) NOT NULL,
+  `param_len` tinyint(2) NOT NULL,
+  `file_path` VARCHAR(256) NOT NULL,
+  `completion` VARCHAR(256) NOT NULL,
+  PRIMARY KEY (`mod_name`, `fun_name`, `param_len`)
+); 
+'''
+INSERT_LIBS_SQL = '''
+REPLACE INTO libs(mod_name, fun_name, param_len, file_path, completion) VALUES 
+(?, ?, ?, ?, ?);
+'''
+
+QUERY_COMPLETION = '''
+select fun_name, param_len, completion from libs where mod_name = ?;
+'''
+
+QUERY_ALL_MOD = '''
+select distinct mod_name from libs;
+'''
 
 class DataCache:
     def __init__(self, dir = '', data_type = '', cache_dir = ''):
@@ -11,6 +34,34 @@ class DataCache:
         self.cache_dir = cache_dir
         self.re_dict = GLOBAL_SET['compiled_re']
         self.version = get_settings_param('sublime_erlang_version', '0.0.0')
+        if cache_dir != '':
+            self.init_db()
+
+    def init_db(self):
+        db_path = self.__get_filepath(self.data_type)
+        self.db_con = sqlite3.connect(db_path, check_same_thread = False)
+        self.db_cur = self.db_con.cursor()
+        self.db_cur.execute(CREATE_LIBS_SQL)
+
+    def query_mod_fun(self, module):
+        self.db_cur.execute(QUERY_COMPLETION, (module, ))
+        query_data = self.db_cur.fetchall()
+
+        completion_data = []
+        for (fun_name, param_len, completion) in query_data:
+            completion_data.append(['{}/{}\tMethod'.format(fun_name, param_len), completion])
+
+        return completion_data
+
+    def query_all_mod(self):
+        self.db_cur.execute(QUERY_ALL_MOD)
+        query_data = self.db_cur.fetchall()
+
+        completion_data = []
+        for (mod_name, ) in query_data:
+            completion_data.append(['{}\tModule'.format(mod_name), mod_name])
+
+        return completion_data
 
     def build_module_dict(self, filepath):
         with open(filepath, encoding = 'UTF-8', errors='ignore') as fd:
@@ -22,11 +73,7 @@ class DataCache:
                 for funname_match in self.re_dict['funname'].finditer(export_match.group()):
                     [name, cnt] = funname_match.group().split('/')
                     export_fun[(name, int(cnt))] = None
-
             module = self.get_module_from_path(filepath)
-
-            if module not in self.libs:
-                self.libs[module] = []
 
             row_id = 1
             for line in code.split('\n'):
@@ -39,14 +86,8 @@ class DataCache:
                     if (fun_name, param_len) in export_fun:
                         del(export_fun[(fun_name, param_len)])
                         completion = self.__tran2compeletion(fun_name, param_list, param_len)
-                        format_fun_name = '{0}/{1}'.format(fun_name, param_len)
-                        self.libs[module].append(('{0}\tfunction'.format(format_fun_name), completion))
-                        
-                        if (module, fun_name) not in self.fun_position:
-                            self.fun_position[(module, fun_name)] = []
-                        self.fun_position[(module, fun_name)].append((format_fun_name, filepath, row_id))
+                        self.db_cur.execute(INSERT_LIBS_SQL, (module, fun_name, param_len, filepath, completion))
                 row_id += 1
-            self.modules.append({'trigger' : '{0}\tmodule'.format(module), 'contents' : module})
 
     def get_module_from_path(self, filepath):
         (path, filename) = os.path.split(filepath)
@@ -76,19 +117,6 @@ class DataCache:
         filepath = os.path.join(self.cache_dir, real_filename)
         return filepath
 
-    def __load_data(self, filename):
-        filepath = self.__get_filepath(filename)
-        if os.path.exists(filepath):
-            with gzip.open(filepath, 'rb') as fd:
-                return pickle.load(fd)
-        else:
-            return None
-
-    def __save_data(self, filename, data):
-        filepath = self.__get_filepath(filename)
-        with gzip.open(filepath, 'wb') as fd:
-            pickle.dump(data, fd)
-
     def __dump_json(self, filename, data):
         filepath = self.__get_filepath(filename)
         with open(filepath, 'w') as fd:
@@ -101,30 +129,15 @@ class DataCache:
                 for file in fnmatch.filter(files, '*.erl'):
                     all_filepath.append(os.path.join(root, file))
 
-        if all_filepath == []:
-            (self.libs, self.fun_position) = self.__load_data('completion')
-        else:
-            cache_info = self.__load_data('cache_info')
-            all_filepath_md5 = hashlib.md5(json.dumps(all_filepath).encode('UTF-8')).hexdigest()
-            new_cache_info = (self.version, all_filepath_md5)
-
-            if cache_info is None or cache_info != new_cache_info:
-                for filepath in all_filepath:
-                    self.build_module_dict(filepath)
-                if 'erlang' in self.libs:
-                    for (trigger, content) in self.libs['erlang']:
-                        self.modules.append({'trigger' : trigger, 'contents' : content})
-
-                self.__save_data('cache_info', new_cache_info)
-                self.__save_data('completion', (self.libs, self.fun_position))
-                self.__dump_json('erlang.sublime-completions', {'scope': 'source.erlang', 'completions': self.modules})
-            else:
-                (self.libs, self.fun_position) = self.__load_data('completion')
+        for filepath in all_filepath:
+            self.build_module_dict(filepath)
+        self.db_con.commit()
 
     def build_data_async(self):
         this = self
         class BuildDataAsync(threading.Thread):
             def run(self):
-                this.build_data()
+                # this.build_data()
+                True
                 
         BuildDataAsync().start()

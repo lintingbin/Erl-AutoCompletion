@@ -35,9 +35,6 @@ if sys.version_info < (3,):
 
 class ErlListener(sublime_plugin.EventListener):
     def on_query_completions(self, view, prefix, locations):
-        if cache['libs'].libs == {}: 
-            return
-
         if not view.match_selector(locations[0], "source.erlang"): 
             return []
 
@@ -50,17 +47,18 @@ class ErlListener(sublime_plugin.EventListener):
                 return
 
             flag = sublime.INHIBIT_WORD_COMPLETIONS | sublime.INHIBIT_EXPLICIT_COMPLETIONS
-            if module_name in cache['libs'].libs:
-                return (cache['libs'].libs[module_name], flag)
-
-            if module_name in cache['project'].libs:
-                return (cache['project'].libs[module_name], flag)
+            completion = cache['libs'].query_mod_fun(module_name)
+            if completion != []:
+                return (completion, flag)
+            completion = cache['project'].query_mod_fun(module_name)
+            if completion != []:
+                return (completion, flag)
         else:
             if letter == '-' and view.substr(view.line(point))[0] == '-':
                 return GLOBAL_SET['-key']
 
             if re.match('^[0-9a-z_]+$', prefix) and len(prefix) > 1:
-                return []
+                return cache['libs'].query_all_mod() + cache['project'].query_all_mod() + cache['project'].query_mod_fun('erlang')
             
             return ([], sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
