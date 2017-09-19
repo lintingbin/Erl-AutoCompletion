@@ -1,19 +1,20 @@
-import os, fnmatch, re, threading, sublime, json, sqlite3
+import os, fnmatch, re, threading, sublime, json, sqlite3, shutil, time
 from .settings import get_settings_param, GLOBAL_SET
 
 CREATE_LIBS_SQL = '''
-CREATE TABLE IF NOT EXISTS `libs` (
-  `mod_name` VARCHAR(128) NOT NULL,
-  `fun_name` VARCHAR(128) NOT NULL,
-  `param_len` tinyint(2) NOT NULL,
-  `file_path` VARCHAR(256) NOT NULL,
-  `completion` VARCHAR(256) NOT NULL,
-  PRIMARY KEY (`mod_name`, `fun_name`, `param_len`)
+create table if not exists `libs` (
+  `id` integer PRIMARY KEY autoincrement,
+  `mod_name` varchar(128) not null,
+  `fun_name` varchar(128) not null,
+  `param_len` tinyint(2) not null,
+  `file_path` varchar(256) not null,
+  `row_num` int unsigned not null,
+  `completion` varchar(256) not null
 ); 
 '''
 INSERT_LIBS_SQL = '''
-REPLACE INTO libs(mod_name, fun_name, param_len, file_path, completion) VALUES 
-(?, ?, ?, ?, ?);
+replace into libs(mod_name, fun_name, param_len, file_path, row_num, completion) values 
+(?, ?, ?, ?, ?, ?);
 '''
 
 QUERY_COMPLETION = '''
@@ -24,26 +25,41 @@ QUERY_ALL_MOD = '''
 select distinct mod_name from libs;
 '''
 
+QUERY_POSITION = '''
+select fun_name, param_len, file_path, row_num from libs where mod_name = ? and fun_name = ?
+'''
+
 class DataCache:
     def __init__(self, dir = '', data_type = '', cache_dir = ''):
         self.dir = dir
-        self.libs = {}
-        self.fun_position = {}
-        self.modules = []
         self.data_type = data_type
         self.cache_dir = cache_dir
         self.re_dict = GLOBAL_SET['compiled_re']
         self.version = get_settings_param('sublime_erlang_version', '0.0.0')
+        self.is_ready = False
         if cache_dir != '':
-            self.init_db()
+            self.__init_db()
 
-    def init_db(self):
-        db_path = self.__get_filepath(self.data_type)
-        self.db_con = sqlite3.connect(db_path, check_same_thread = False)
-        self.db_cur = self.db_con.cursor()
-        self.db_cur.execute(CREATE_LIBS_SQL)
+    def __init_db(self):
+        db_path = self.__get_filepath('completion')
+        try:
+            self.db_con = sqlite3.connect(db_path, check_same_thread = False)
+            self.db_cur = self.db_con.cursor()
+            self.db_cur.execute(CREATE_LIBS_SQL)
+        except Exception as e:
+            self.db_con.close()
+            print('Exception', e)
+            shutil.rmtree(self.cache_dir)
+            print('Remove dir {}.'.format(self.cache_dir))
+            db_path = self.__get_filepath('completion')
+            self.db_con = sqlite3.connect(db_path, check_same_thread = False)
+            self.db_cur = self.db_con.cursor()
+            self.db_cur.execute(CREATE_LIBS_SQL)
 
     def query_mod_fun(self, module):
+        if not self.is_ready:
+            return []
+
         self.db_cur.execute(QUERY_COMPLETION, (module, ))
         query_data = self.db_cur.fetchall()
 
@@ -54,12 +70,28 @@ class DataCache:
         return completion_data
 
     def query_all_mod(self):
+        if not self.is_ready:
+            return []
+        
         self.db_cur.execute(QUERY_ALL_MOD)
         query_data = self.db_cur.fetchall()
 
         completion_data = []
         for (mod_name, ) in query_data:
             completion_data.append(['{}\tModule'.format(mod_name), mod_name])
+
+        return completion_data
+
+    def query_fun_position(self, module, function):
+        if not self.is_ready:
+            return []
+
+        self.db_cur.execute(QUERY_POSITION, (module, function))
+        query_data = self.db_cur.fetchall()
+
+        completion_data = []
+        for (fun_name, param_len, file_path, row_num) in query_data:
+            completion_data.append(('{}/{}'.format(fun_name, param_len), file_path, row_num))
 
         return completion_data
 
@@ -75,7 +107,7 @@ class DataCache:
                     export_fun[(name, int(cnt))] = None
             module = self.get_module_from_path(filepath)
 
-            row_id = 1
+            row_num = 1
             for line in code.split('\n'):
                 funhead = self.re_dict['funline'].search(line)
                 if funhead is not None: 
@@ -86,8 +118,8 @@ class DataCache:
                     if (fun_name, param_len) in export_fun:
                         del(export_fun[(fun_name, param_len)])
                         completion = self.__tran2compeletion(fun_name, param_list, param_len)
-                        self.db_cur.execute(INSERT_LIBS_SQL, (module, fun_name, param_len, filepath, completion))
-                row_id += 1
+                        self.db_cur.execute(INSERT_LIBS_SQL, (module, fun_name, param_len, filepath, row_num, completion))
+                row_num += 1
 
     def get_module_from_path(self, filepath):
         (path, filename) = os.path.split(filepath)
@@ -131,13 +163,17 @@ class DataCache:
 
         for filepath in all_filepath:
             self.build_module_dict(filepath)
+        
         self.db_con.commit()
 
     def build_data_async(self):
         this = self
         class BuildDataAsync(threading.Thread):
             def run(self):
-                # this.build_data()
-                True
+                start_time = time.time()
+                print("start", start_time)
+                this.build_data()
+                print("end", time.time() - start_time)
+                this.is_ready = True
                 
         BuildDataAsync().start()
