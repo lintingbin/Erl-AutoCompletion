@@ -3,11 +3,9 @@ from functools import partial
 import sublime_plugin, sublime, re, os, sys, shutil
 
 cache = {}
-go_to = None
 
 def plugin_loaded():
     global cache
-    global go_to
 
     cache_dir = os.path.join(sublime.cache_path(), GLOBAL_SET['package_name'])
     cache['libs'] = DataCache([get_erl_lib_dir()], 'libs', cache_dir)
@@ -17,8 +15,6 @@ def plugin_loaded():
     project_folder = get_settings_param('erlang_project_folder', all_folders)
     cache['project'] = DataCache(project_folder, 'project', cache_dir)
     cache['project'].build_data_async()
-
-    go_to = GoTo()
 
 def plugin_unloaded():
     from package_control import events
@@ -58,7 +54,7 @@ class ErlListener(sublime_plugin.EventListener):
                 return GLOBAL_SET['-key']
 
             if re.match('^[0-9a-z_]+$', prefix) and len(prefix) > 1:
-                return cache['libs'].query_all_mod() + cache['project'].query_all_mod() + cache['project'].query_mod_fun('erlang')
+                return cache['libs'].query_all_mod() + cache['project'].query_all_mod() + cache['libs'].query_mod_fun('erlang')
             
             return ([], sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
@@ -70,15 +66,21 @@ class ErlListener(sublime_plugin.EventListener):
             if not view.match_selector(point, "source.erlang"): 
                 return
 
-            go_to.run(point, view, cache)
+            go_to = GoTo()
+            go_to.run(point, view, cache, is_quick_panel = True)
+
+    def on_hover(self, view, point, hover_zone):
+        if not view.match_selector(point, "source.erlang"): 
+            return
+
+        go_to = GoTo()
+        go_to.run(point, view, cache)
 
     def on_post_save(self, view):
         caret = view.sel()[0].a
 
         if not ('source.erlang' in view.scope_name(caret)): 
             return
-
-        # cache['project'].build_data_async()
 
 class GotoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
