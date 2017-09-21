@@ -50,9 +50,16 @@ select distinct mod_name from libs;
 '''
 
 QUERY_POSITION = '''
-select folder, fun_name, param_len, row_num from libs join libs_info where libs_info.id = libs.id and mod_name = ? and fun_name = ?
+select folder, fun_name, param_len, row_num from libs join libs_info where libs_info.id = libs.id and mod_name = ? and fun_name = ?;
 '''
 
+DEL_FOLDER_LIBS_SQL = '''
+delete from libs where id in (select id from libs_info where parent_id = ?);
+'''
+
+DEL_FOLDER_SQL = '''
+delete from libs_info where parent_id = ? or folder = ?;
+'''
 class DataCache:
     def __init__(self, data_type = '', cache_dir = '', dir = None):
         self.dir = dir
@@ -67,8 +74,7 @@ class DataCache:
     def __init_db(self):
         if os.path.exists(self.cache_dir): 
             shutil.rmtree(self.cache_dir)
-        # self.db_con = sqlite3.connect(':memory:', check_same_thread = False)
-        self.db_con = sqlite3.connect('D:/{}'.format(self.data_type), check_same_thread = False)
+        self.db_con = sqlite3.connect(':memory:', check_same_thread = False)
         self.db_cur = self.db_con.cursor()
         self.db_cur.execute(CREATE_LIBS_INFO_SQL)
         self.db_cur.execute(CREATE_LIBS_SQL)
@@ -83,10 +89,13 @@ class DataCache:
             self.lock.release()
 
         completion_data = []
+        all_fun = []
         for (fun_name, param_len, param_str) in query_data:
-            param_list = self.format_param(param_str)
-            completion = self.__tran2compeletion(fun_name, param_list, param_len)
-            completion_data.append(['{}/{}\tMethod'.format(fun_name, param_len), completion])
+            if (fun_name, param_len) not in all_fun:
+                param_list = self.format_param(param_str)
+                completion = self.__tran2compeletion(fun_name, param_list, param_len)
+                completion_data.append(['{}/{}\tMethod'.format(fun_name, param_len), completion])
+                all_fun.append((fun_name, param_len))
 
         return completion_data
 
@@ -195,7 +204,9 @@ class DataCache:
                 if erl_files == []:
                     continue
                     
-                self.db_cur.execute(INSERT_FOLDER_INFO, (self.folder_id, parent_id, root))
+                if folder != root:
+                    self.folder_id += 1
+                    self.db_cur.execute(INSERT_FOLDER_INFO, (self.folder_id, parent_id, root))
                 for file in erl_files:
                     all_filepath.append((os.path.join(root, file), self.folder_id))
                 self.folder_id += 1
@@ -221,9 +232,23 @@ class DataCache:
         (folder, filename) = os.path.split(filepath)
         (module, extension) = os.path.splitext(filename)
         (fid, pid) = self.get_folder_id(folder)
-        print('rebuild_module_index', folder, fid, pid)
-        self.db_cur.execute(DEL_LIBS_SQL, (fid, module))
+        try:
+            self.lock.acquire(True)
+            self.db_cur.execute(DEL_LIBS_SQL, (fid, module))
+        finally:
+            self.lock.release()
         self.build_module_index(filepath, fid)
+        self.db_con.commit()
+
+    def delete_module_index(self, folders):
+        for folder in folders:
+            try:
+                self.lock.acquire(True)
+                folder_info = self.get_folder_id(folder)
+                self.db_cur.execute(DEL_FOLDER_LIBS_SQL, (folder_info[0], ))
+                self.db_cur.execute(DEL_FOLDER_SQL, (folder_info[0], folder))
+            finally:
+                self.lock.release()
         self.db_con.commit()
 
     def build_data_async(self):

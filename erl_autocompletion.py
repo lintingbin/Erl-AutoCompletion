@@ -84,8 +84,7 @@ class ErlListener(sublime_plugin.EventListener):
 
     def on_window_command(self, window, command_name, args):
         if command_name == 'remove_folder':
-            # TODO
-            return
+            cache['project'].delete_module_index(args['dirs'])
 
     def on_load(self, view):
         cache['project'].build_data_async()
