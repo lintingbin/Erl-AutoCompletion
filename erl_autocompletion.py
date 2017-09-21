@@ -8,12 +8,10 @@ def plugin_loaded():
     global cache
 
     cache_dir = os.path.join(sublime.cache_path(), GLOBAL_SET['package_name'])
-    cache['libs'] = DataCache([get_erl_lib_dir()], 'libs', cache_dir)
+    cache['libs'] = DataCache('libs', cache_dir, [get_erl_lib_dir()])
     cache['libs'].build_data_async()
 
-    all_folders = sublime.active_window().folders()
-    project_folder = get_settings_param('erlang_project_folder', all_folders)
-    cache['project'] = DataCache(project_folder, 'project', cache_dir)
+    cache['project'] = DataCache('project', cache_dir)
     cache['project'].build_data_async()
 
 def plugin_unloaded():
@@ -76,11 +74,21 @@ class ErlListener(sublime_plugin.EventListener):
         go_to = GoTo()
         go_to.run(point, view, cache)
 
-    def on_post_save(self, view):
+    def on_post_save_async(self, view):
         caret = view.sel()[0].a
 
         if not ('source.erlang' in view.scope_name(caret)): 
             return
+
+        cache['project'].rebuild_module_index(view.file_name())
+
+    def on_window_command(self, window, command_name, args):
+        if command_name == 'remove_folder':
+            # TODO
+            return
+
+    def on_load(self, view):
+        cache['project'].build_data_async()
 
 class GotoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
