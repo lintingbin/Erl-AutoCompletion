@@ -38,12 +38,6 @@ Settings file open by: Preferences -> Package Settings -> Erl-AutoCompletion
 
 If you have set the escript environment variable, you do not need to set the escript value in the configuration file, comment it out.
 
-#### erlang_project_folder settings
-
-This configuration item is used to set the folder where you want to add the source code for the auto completion and goto definition function.
-
-If you comment out this configuration(default), the plugin will read all the files that have been opened by Sublime as the value for this configuration item.
-
 #### Autocomplete on ":"
 
 If you want auto-completion on ":", you can define a trigger in the
