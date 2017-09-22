@@ -19,6 +19,11 @@ Additional info about to use Sublime Package Control you can find here: [http://
     git clone https://github.com/lintingbin2009/Erl-AutoCompletion
     restart sublime-text
 
+Demonstration
+------------
+
+![](http://res.cloudinary.com/dx4c0l4du/image/upload/v1506091096/function_ifcwux.gif)
+
 Goto definition
 ------------
 
