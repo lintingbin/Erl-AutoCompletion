@@ -57,10 +57,15 @@ class ErlListener(sublime_plugin.EventListener):
             return ([], sublime.INHIBIT_EXPLICIT_COMPLETIONS)
 
     def on_text_command(self, view, command_name, args):
-        if command_name == 'goto' and 'event' in args:
-            event = args['event']
-            point = view.window_to_text((event['x'], event['y']))
+        if command_name == 'goto':
+            if args and 'event' in args:
+                event = args['event']
+                point = view.window_to_text((event['x'], event['y']))
+            else:
+                sels = view.sel()
+                point = sels[0].begin()
 
+            print(point)
             if not view.match_selector(point, "source.erlang"): 
                 return
 
