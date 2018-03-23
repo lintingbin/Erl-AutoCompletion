@@ -153,8 +153,12 @@ class GoTo(DataCache):
 
         self.__window.show_quick_panel(
             [self.__show_option(o) for o in options],
-            self.__jump_to_in_window,
+            self.__open_to_in_window,
             on_highlight=partial(self.__jump_to_in_window))
+
+    def __open_to_in_window(self, index, row_num = None, param_cnt = None):
+        (fun_name, filepath, row_num) = self.options[index]
+        sublime.active_window().open_file('{0}:{1}'.format(filepath, row_num or 0), sublime.ENCODED_POSITION)
 
     def __jump_to_in_window(self, index, row_num = None, param_cnt = None):
         if index == -1:  

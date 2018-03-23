@@ -65,7 +65,6 @@ class ErlListener(sublime_plugin.EventListener):
                 sels = view.sel()
                 point = sels[0].begin()
 
-            print(point)
             if not view.match_selector(point, "source.erlang"): 
                 return
 
