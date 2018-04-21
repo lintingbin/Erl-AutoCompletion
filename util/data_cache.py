@@ -223,14 +223,19 @@ class DataCache:
         return all_folders
 
     def get_folder_id(self, folder):
+        result = None
         try:
             self.lock.acquire(True)
             self.db_cur.execute(QUERY_FOLDER, (folder, ))
-            for (fid, pid) in self.db_cur.fetchall():
-                return (fid, pid)
+            result = self.db_cur.fetchall()
         finally:
             self.lock.release()
-        return None
+
+        if result is None:
+            return None
+        for (fid, pid) in result:
+            return (fid, pid)
+
 
     def rebuild_module_index(self, filepath):
         (folder, filename) = os.path.split(filepath)
